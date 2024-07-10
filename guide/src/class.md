@@ -196,7 +196,7 @@ fn my_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
 ## pyclass types as Python objects
 
-Often it is useful to turn a `#[pyclass]` type `T` into a Python object when accessing it from Rust code. This can be done with the smart pointers [`Py<T>`] and [`Bound<'py, T>`], explained in depth in [the Python objects](./types.md#pyo3s-smart-pointers) section of the guide.
+Even when a `#[pyclass]` type `T` is accessed from Rust code it is often useful to turn it into a Python object, e.g. to pass it back and forth between Python and Rust. This can be done with the smart pointers [`Py<T>`] and [`Bound<'py, T>`], explained in depth in [the Python objects](./types.md#pyo3s-smart-pointers) section of the guide.
 
 Most Python objects do not offer exclusive (`&mut`) access (see the [section on Python's memory model](./python-from-rust.md#pythons-memory-model)). However, Rust `#[pyclass]` structs wrapped as Python objects often *do* need `&mut` access and PyO3 *can* guarantee exclusive access to them via the GIL.
 
