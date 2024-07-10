@@ -194,17 +194,15 @@ fn my_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
 }
 ```
 
-## Bound<T> and interior mutability
+## pyclass types as Python objects
 
-Often is useful to turn a `#[pyclass]` type `T` into a Python object and access it from Rust code. The [`Py<T>`] and [`Bound<'py, T>`] smart pointers are the ways to represent a Python object in PyO3's API. More detail can be found about them [in the Python objects](./types.md#pyo3s-smart-pointers) section of the guide.
+Often it is useful to turn a `#[pyclass]` type `T` into a Python object when accessing it from Rust code. This can be done with the smart pointers [`Py<T>`] and [`Bound<'py, T>`], explained in depth in [the Python objects](./types.md#pyo3s-smart-pointers) section of the guide.
 
-Most Python objects do not offer exclusive (`&mut`) access (see the [section on Python's memory model](./python-from-rust.md#pythons-memory-model)). However, Rust structs wrapped as Python objects (called `pyclass` types) often *do* need `&mut` access. Due to the GIL, PyO3 *can* guarantee exclusive access to them.
+Most Python objects do not offer exclusive (`&mut`) access (see the [section on Python's memory model](./python-from-rust.md#pythons-memory-model)). However, Rust `#[pyclass]` structs wrapped as Python objects often *do* need `&mut` access and PyO3 *can* guarantee exclusive access to them via the GIL.
 
-The Rust borrow checker cannot reason about `&mut` references once an object's ownership has been passed to the Python interpreter. This means that borrow checking is done at runtime using with a scheme very similar to `std::cell::RefCell<T>`. This is known as [interior mutability](https://doc.rust-lang.org/book/ch15-05-interior-mutability.html).
+The Rust borrow checker cannot reason about `&mut` references once an object's ownership has been passed to the Python interpreter. This means that borrow checking is done at runtime similar to how `std::cell::RefCell<T>` works. Users who are familiar with `RefCell<T>` can use `Py<T>` and `Bound<'py, T>` just like `RefCell<T>`.
 
-Users who are familiar with `RefCell<T>` can use `Py<T>` and `Bound<'py, T>` just like `RefCell<T>`.
-
-For users who are not very familiar with `RefCell<T>`, here is a reminder of Rust's rules of borrowing:
+For users who are not very familiar with `RefCell<T>` and [interior mutability](https://doc.rust-lang.org/book/ch15-05-interior-mutability.html), here is a reminder of Rust's rules of borrowing:
 - At any given time, you can have either (but not both of) one mutable reference or any number of immutable references.
 - References can never outlast the data they refer to.
 
