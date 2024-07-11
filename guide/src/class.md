@@ -200,13 +200,13 @@ Even when a `#[pyclass]` type `T` is accessed from Rust code it is often useful 
 
 Most Python objects do not offer exclusive (`&mut`) access (see the [section on Python's memory model](./python-from-rust.md#pythons-memory-model)). However, Rust `#[pyclass]` structs wrapped as Python objects often *do* need `&mut` access and PyO3 *can* guarantee exclusive access to them via the GIL.
 
-The Rust borrow checker cannot reason about `&mut` references once an object's ownership has been passed to the Python interpreter. This means that borrow checking is done at runtime similar to how `std::cell::RefCell<T>` works. Users who are familiar with `RefCell<T>` can use `Py<T>` and `Bound<'py, T>` just like `RefCell<T>`.
+As Rust's (compile time) borrow checker cannot reason about objects when their ownership is passed to the Python interpreter, borrow checking is done dynamically (at runtime) similar to how `std::cell::RefCell<T>` works.
 
 For users who are not very familiar with `RefCell<T>` and [interior mutability](https://doc.rust-lang.org/book/ch15-05-interior-mutability.html), here is a reminder of Rust's rules of borrowing:
 - At any given time, you can have either (but not both of) one mutable reference or any number of immutable references.
 - References can never outlast the data they refer to.
 
-`Py<T>` and `Bound<'py, T>`, like `RefCell<T>`, ensure these borrowing rules by tracking references at runtime.
+`Py<T>` and `Bound<'py, T>`, like `RefCell<T>`, ensure this at runtime by guarding and tracking accesses and references to the objects they contain.
 
 ```rust
 # use pyo3::prelude::*;
