@@ -258,13 +258,9 @@ mod from_py_object_bound_sealed {
     // This generic implementation is why the seal is separate from
     // `crate::sealed::Sealed`.
     impl<'py, T> Sealed for T where T: super::FromPyObject<'py> {}
-    #[cfg(not(feature = "gil-refs"))]
     impl Sealed for &'_ str {}
-    #[cfg(not(feature = "gil-refs"))]
     impl Sealed for std::borrow::Cow<'_, str> {}
-    #[cfg(not(feature = "gil-refs"))]
     impl Sealed for &'_ [u8] {}
-    #[cfg(not(feature = "gil-refs"))]
     impl Sealed for std::borrow::Cow<'_, [u8]> {}
 }
 
@@ -350,17 +346,6 @@ where
     #[inline]
     fn into_py(self, py: Python<'_>) -> PyObject {
         unsafe { PyObject::from_borrowed_ptr(py, self.as_ref().as_ptr()) }
-    }
-}
-
-#[allow(deprecated)]
-#[cfg(feature = "gil-refs")]
-impl<'py, T> FromPyObject<'py> for &'py crate::PyCell<T>
-where
-    T: PyClass,
-{
-    fn extract_bound(obj: &Bound<'py, PyAny>) -> PyResult<Self> {
-        obj.clone().into_gil_ref().downcast().map_err(Into::into)
     }
 }
 
