@@ -206,7 +206,7 @@ For users who are not very familiar with `RefCell<T>` and [interior mutability](
 - At any given time, you can have either (but not both of) one mutable reference or any number of immutable references.
 - References can never outlast the data they refer to.
 
-`Py<T>` and `Bound<'py, T>`, like `RefCell<T>`, ensure this at runtime by guarding and tracking accesses and references to the objects they contain.
+`Py<T>` and `Bound<'py, T>`, like `RefCell<T>`, ensure this at runtime by guarding and tracking accesses and references to the objects they wrap.
 
 ```rust
 # use pyo3::prelude::*;
