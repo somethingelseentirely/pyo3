@@ -12,7 +12,7 @@ Before PyO3 0.21, PyO3's main API to interact with Python objects was a deprecat
 
 PyO3's API offers three generic smart pointers: `Py<T>`, `Bound<'py, T>` and `Borrowed<'a, 'py, T>`. For each of these the type parameter `T` will be filled by a [Python type](#python-types). For example, a Python list object can be represented by a concrete `Py<PyList>`, `Bound<'py, PyList>`, and `Borrowed<'a, 'py, PyList>`, or an abstract `Py<PyAny>`, `Bound<'py, PyAny>`, and `Borrowed<'a, 'py, PyAny>`.
 
-These smart pointers behave differently due to their lifetime parameters. `Py<T>` has no lifetime parameters, `Bound<'py, T>` has [the `'py` lifetime](./python-from-rust.md#the-py-lifetime) as a parameter, and `Borrowed<'a, 'py, T>` has the `'py` lifetime plus an additional lifetime `'a` to denote the lifetime it is borrowing data for. (You can read more about these lifetimes in the subsections below).
+The main difference between these smart pointers is in their lifetime parameters. `Py<T>` has no lifetime parameters, `Bound<'py, T>` has [the `'py` lifetime](./python-from-rust.md#the-py-lifetime) as a parameter, and `Borrowed<'a, 'py, T>` has the `'py` lifetime plus an additional lifetime `'a` to denote the lifetime it is borrowing data for. (You can read more about these lifetimes in the subsections below).
 
 Python objects are reference counted, like [`std::sync::Arc`](https://doc.rust-lang.org/stable/std/sync/struct.Arc.html). A major reason for these smart pointers is to bring Python's reference counting to a Rust API.
 
