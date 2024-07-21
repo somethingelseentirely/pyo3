@@ -209,8 +209,8 @@ This parameter `T` can be filled by:
  - [`#[pyclass]`][pyclass] types defined from Rust
 
 The following subsections covers some further detail about how to work with these types:
-- the APIs that are available for different concrete types,
-- how to cast `Bound<'py, T>` to a specific concrete type, and
+- the APIs that are available for different Python types,
+- how to cast `Bound<'py, T>` to a specific Python type, and
 - how to get Rust data out of a `Bound<'py, T>`.
 
 ### Using APIs for Python types
