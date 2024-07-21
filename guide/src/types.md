@@ -1,20 +1,33 @@
 # Python object types
 
-This section of the guide explains how PyO3 represents Python objects with Rust types.
+This section of the guide explains the Rust types PyO3 uses to represent Python objects.
 
 All Python objects in PyO3 are wrapped in a `Py<T>`, `Bound<'py, T>`, or `Borrowed<'a, 'py, T>` [smart pointer][smart-pointers]. These reconcile the dynamic and static lifetime management strategies of Python and Rust by upholding certain rules through runtime checks. They are each explained in detail in the [first section below](#pyo3s-smart-pointers).
 
-The type which fills the generic parameter `T` of the smart pointer restricts the type of the Python object it holds. The most common is `PyAny`, which can be any Python object (similar to Python's [`typing.Any`](https://docs.python.org/3/library/typing.html#the-any-type) or Rust's [`std::any::Any`](https://doc.rust-lang.org/std/any/index.html)), be it defined in Python, Rust or built-in. The type can also be concrete like a user defined `#[pyclass]` or one of Python's built-in types, such as `PyList`, `PyDict`, and `PyTuple`.  The [second section below](#python-types) expands on how to use these types.
+The type which fills the generic parameter `T` of the smart pointer restricts the type of the Python object it holds, for example `PyAny` or `PyList`.
+Checking these expectations about objects at runtime enables the use of dynamically typed Python objects in the context of statically typed Rust code.
+The [second section below expands on how to use these Python types](#python-types).
+
+For example, a Python list object could be represented by `Py<PyList>`, `Bound<'py, PyList>`, `Borrowed<'a, 'py, PyList>`, `Py<PyAny>`, `Bound<'py, PyAny>`, or `Borrowed<'a, 'py, PyAny>`.
 
 Before PyO3 0.21, PyO3's main API to interact with Python objects was a deprecated API known as the "GIL Refs" API, containing reference types such as `&PyAny`, `&PyList`, and `&PyCell<T>` for user-defined `#[pyclass]` types. The [third section below](#the-gil-refs-api) details this deprecated API.
 
+## Python types
+
+In all of `Py<T>`, `Bound<'py, T>`, and `Borrowed<'a, 'py, T>`, the type parameter `T` denotes the type of the Python object referred to by the smart pointer.
+
+This parameter `T` can be filled by:
+ - [`PyAny`][PyAny], which represents any Python object (similar to Python's [`typing.Any`](https://docs.python.org/3/library/typing.html#the-any-type) or Rust's [`std::any::Any`](https://doc.rust-lang.org/std/any/index.html)), be it a vanilla Python object or one of the following types,
+ - Native Python types such as `PyList`, `PyTuple`, and `PyDict`, and
+ - [`#[pyclass]`][pyclass] types defined from Rust
+
 ## PyO3's smart pointers
 
-PyO3's API offers three generic smart pointers: `Py<T>`, `Bound<'py, T>` and `Borrowed<'a, 'py, T>`. For each of these the type parameter `T` will be filled by a [Python type](#python-types). For example, a Python list object can be represented by a concrete `Py<PyList>`, `Bound<'py, PyList>`, and `Borrowed<'a, 'py, PyList>`, or an abstract `Py<PyAny>`, `Bound<'py, PyAny>`, and `Borrowed<'a, 'py, PyAny>`.
+Python has quite a bit of machinery managing objects, it uses reference counting (similar to [`std::sync::Arc`](https://doc.rust-lang.org/stable/std/sync/struct.Arc.html)) as it's primary memory management strategy, also employs a generational garbage collector, and handles parallelism with a Global Interpreter Lock (the infamous `GIL`).
+
+PyO3 integrates Rust with this machinery using three generic smart pointers: `Py<T>`, `Bound<'py, T>` and `Borrowed<'a, 'py, T>`. For each of these the type parameter `T` will be filled by a [Python type](#python-types).
 
 The main difference between these smart pointers is in their lifetime parameters. `Py<T>` has no lifetime parameters, `Bound<'py, T>` has [the `'py` lifetime](./python-from-rust.md#the-py-lifetime) as a parameter, and `Borrowed<'a, 'py, T>` has the `'py` lifetime plus an additional lifetime `'a` to denote the lifetime it is borrowing data for. (You can read more about these lifetimes in the subsections below).
-
-Python objects are reference counted, like [`std::sync::Arc`](https://doc.rust-lang.org/stable/std/sync/struct.Arc.html). A major reason for these smart pointers is to bring Python's reference counting to a Rust API.
 
 The recommendation of when to use each of these smart pointers is as follows:
 
@@ -26,7 +39,7 @@ The sections below also explain these smart pointers in a little more detail.
 
 ### `Py<T>` (and `PyObject`)
 
-[`Py<T>`][Py] is the foundational smart pointer in PyO3's API. The type parameter `T` denotes the type of the Python object. Very frequently this is `PyAny`, meaning any Python object. This is so common that `Py<PyAny>` has a type alias `PyObject`.
+[`Py<T>`][Py] is the foundational smart pointer in PyO3's API. The type parameter `T` denotes the object's Python type. Very frequently this is `PyAny`, meaning any Python object. This is so common that `Py<PyAny>` has a type alias `PyObject`.
 
 Because `Py<T>` is not bound to [the `'py` lifetime](./python-from-rust.md#the-py-lifetime), it is the type to use when storing a Python object inside a Rust `struct` or `enum` which do not want to have a lifetime parameter. In particular, [`#[pyclass]`][pyclass] types are not permitted to have a lifetime, so `Py<T>` is the correct type to store Python objects inside them.
 
@@ -199,17 +212,12 @@ let obj: &Py<PyAny> = borrowed.as_unbound();
 let obj: Py<PyAny> = borrowed.to_owned().unbind().
 ```
 
-## Python types
+## Python types in Depth
 
-In all of `Py<T>`, `Bound<'py, T>`, and `Borrowed<'a, 'py, T>`, the type parameter `T` denotes the type of the Python object referred to by the smart pointer.
+Let us take a closer look at the the Python types used to denote the type of objects inside the smart pointers.
 
-This parameter `T` can be filled by:
- - [`PyAny`][PyAny], which represents any Python object,
- - Native Python types such as `PyList`, `PyTuple`, and `PyDict`, and
- - [`#[pyclass]`][pyclass] types defined from Rust
-
-The following subsections covers some further detail about how to work with these types:
-- the APIs that are available for different Python types,
+The following subsections covers some further detail about how to work with Python types:
+- the APIs that are available with different Python types,
 - how to cast `Bound<'py, T>` to a specific Python type, and
 - how to get Rust data out of a `Bound<'py, T>`.
 
