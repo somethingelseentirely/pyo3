@@ -281,7 +281,7 @@ use pyo3::prelude::*;
 struct MyClass {}
 
 # fn example<'py>(py: Python<'py>) -> PyResult<()> {
-// create a new Python `tuple`, and use `.into_any()` to erase the type
+// create a new `MyClass` Python object, and use `.into_any()` to erase the type
 let obj: Bound<'py, PyAny> = Bound::new(py, MyClass {})?.into_any();
 
 // use `.downcast()` to cast to `MyClass` without transferring ownership
