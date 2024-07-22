@@ -1,12 +1,12 @@
 # Python object types
 
-This section of the guide explains the Rust types PyO3 uses to represent Python objects.
+This section of the guide explains the types and abstractions PyO3 uses to represent Python objects in Rust.
 
-All Python objects in PyO3 are wrapped in a `Py<T>`, `Bound<'py, T>`, or `Borrowed<'a, 'py, T>` [smart pointer][smart-pointers]. These reconcile the dynamic and static lifetime management strategies of Python and Rust by upholding certain rules through runtime checks. They are each explained in detail in the [first section below](#pyo3s-smart-pointers).
-
-The type which fills the generic parameter `T` of the smart pointer restricts the type of the Python object it holds, for example `PyAny` or `PyList`.
-Checking these expectations about objects at runtime enables the use of dynamically typed Python objects in the context of statically typed Rust code.
-The [second section below expands on how to use these Python types](#python-types).
+To mediate between the two languages PyO3 needs to address two major differences:
+- It needs to reconcile the dynamic and static lifetime management strategies of Python and Rust.
+This is why all Python objects in PyO3 are wrapped in `Py<T>`, `Bound<'py, T>`, or `Borrowed<'a, 'py, T>` [smart pointers][smart-pointers] which uphold certain rules through runtime checks.
+- It needs to enables the use of dynamically typed Python objects in the context of statically typed Rust code.
+This is done by restricting the type of the Python object a smart pointer holds by filling it's generic parameter `T` with a Python type, and by checking these expectations about objects at runtime, for example by (fallibly) downcasting a `PyAny` to a `PyList`.
 
 For example, a Python list object could be represented by `Py<PyList>`, `Bound<'py, PyList>`, `Borrowed<'a, 'py, PyList>`, `Py<PyAny>`, `Bound<'py, PyAny>`, or `Borrowed<'a, 'py, PyAny>`.
 
