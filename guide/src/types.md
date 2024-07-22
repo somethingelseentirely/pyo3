@@ -6,7 +6,7 @@ To mediate between the two languages PyO3 needs to address two major differences
 - It needs to reconcile the dynamic and static lifetime management strategies of Python and Rust.
 This is why all Python objects in PyO3 are wrapped in `Py<T>`, `Bound<'py, T>`, or `Borrowed<'a, 'py, T>` [smart pointers][smart-pointers] which uphold certain rules through runtime checks.
 - It needs to enables the use of dynamically typed Python objects in the context of statically typed Rust code.
-This is done by restricting the type of the Python object a smart pointer holds by filling it's generic parameter `T` with a Python type, and by checking these expectations about objects at runtime, for example by (fallibly) downcasting a `PyAny` to a `PyList`.
+This is done by restricting the type of the Python object a smart pointer holds, by filling it's generic parameter `T` with a Python type, and by checking these expectations about objects at runtime, for example by (fallibly) downcasting a `PyAny` to a `PyList`.
 
 For example, a Python list object could be represented by `Py<PyList>`, `Bound<'py, PyList>`, `Borrowed<'a, 'py, PyList>`, `Py<PyAny>`, `Bound<'py, PyAny>`, or `Borrowed<'a, 'py, PyAny>`.
 
