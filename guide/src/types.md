@@ -216,7 +216,7 @@ let obj: Py<PyAny> = borrowed.to_owned().unbind().
 
 Let us take a closer look at the the Python types used to denote the type of objects inside the smart pointers.
 
-The following subsections covers some further detail about how to work with Python types:
+The following subsections cover some further detail about how to work with Python types:
 - the APIs that are available with different Python types,
 - how to cast `Bound<'py, T>` to a specific Python type, and
 - how to get Rust data out of a `Bound<'py, T>`.
